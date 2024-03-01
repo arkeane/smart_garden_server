@@ -1,0 +1,36 @@
+services:
+  database:
+    image: redis
+    container_name: plant_base
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Rome
+    command: redis-server --save 30 1 --loglevel warning
+    volumes: 
+      - cache:/data
+    networks:
+      - default
+
+  server:
+    build:
+        context: .
+        dockerfile: Dockerfile
+    image: arkeane/smart_garden_server:latest
+    container_name: plant_server
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:4567:4567"
+    environment:
+      - REDIS_HOST=database
+      - REDIS_PORT=6379
+      - TZ=Europe/Rome
+    networks:
+      - default
+
+volumes:
+  cache:
+    driver: local
+
+networks:
+    default:
+      name: plant_network
